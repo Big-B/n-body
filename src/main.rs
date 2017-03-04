@@ -1,6 +1,6 @@
 mod particle;
 
-const time: f64 = 0.000000001;
+const TIME: f64 = 0.000000001;
 
 fn main() {
     let mut earth: particle::Particle = particle::Particle::new(1.4960e11, 0.0, 1.0,
@@ -11,10 +11,10 @@ fn main() {
     println!("sun: {:?}", sun);
 
     for _ in 0..1_000_000 {
-        earth.AddParticleForce(&sun);
-        sun.AddParticleForce(&earth);
-        earth.Update(time);
-        sun.Update(time);
+        earth.add_particle_force(&sun);
+        sun.add_particle_force(&earth);
+        earth.update(TIME);
+        sun.update(TIME);
     }
     println!("earth: {:?}", earth);
     println!("sun: {:?}", sun);
