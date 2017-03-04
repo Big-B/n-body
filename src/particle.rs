@@ -40,7 +40,7 @@ impl Particle {
 
     pub fn AddParticleForce(&mut self, other: &Particle) {
         let distance = self.position.distance(&other.position);
-        let force = (G * self.mass * other.mass)/(distance.powi(2));
+        let force = (G * self.mass * other.mass)/(distance.powi(3));
         self.fx += force * (other.position.x - self.position.x) / distance;
         self.fy += force * (other.position.y - self.position.y) / distance;
         self.fz += force * (other.position.z - self.position.z) / distance;
