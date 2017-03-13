@@ -18,7 +18,8 @@ impl Point {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct Particle {
+pub struct Particle<'a> {
+    name : &'a str,
     position: Point,
     vx : f64,
     vy : f64,
@@ -32,12 +33,12 @@ pub struct Particle {
 /// The gravitational constant as defined in wikipedia:
 /// 6.67408(31)x10^(-11)m^(3)*kg^(-1)*s^(-2)
 const G: f64 = 6.67408e-11;
-impl Particle {
-    pub fn new(px : f64, py : f64, pz : f64,
+impl<'a> Particle<'a> {
+    pub fn new(name: &str, px : f64, py : f64, pz : f64,
                vx : f64, vy : f64, vz : f64,
                mass : f64) -> Particle {
         let point = Point::new(px, py, pz);
-        Particle {position: point, vx: vx, vy: vy, vz: vz, fx: 0_f64,
+        Particle {name: name, position: point, vx: vx, vy: vy, vz: vz, fx: 0_f64,
         fy: 0_f64, fz: 0_f64, mass: mass}
     }
 
@@ -65,16 +66,16 @@ impl Particle {
 }
 
 #[derive(Debug)]
-pub struct System {
-    particles: Vec<Particle>,
+pub struct System<'a> {
+    particles: Vec<Particle<'a>>,
 }
 
-impl System {
-    pub fn new() -> System {
+impl<'a> System<'a> {
+    pub fn new() -> System<'a> {
         System {particles: Vec::new()}
     }
 
-    pub fn add_particle(&mut self, particle: Particle) {
+    pub fn add_particle(&mut self, particle: Particle<'a>) {
         self.particles.push(particle);
     }
 
