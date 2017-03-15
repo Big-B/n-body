@@ -1,25 +1,80 @@
+extern crate getopts;
+use getopts::Options;
+use std::env;
+use std::fs::File;
+use std::io::BufReader;
+
 mod system;
+use system::System;
+use system::Particle;
+use std::io::BufRead;
 
 const TIME: f64 = 1.0000;
 const DURATION: u64 = 3.154e7 as u64;
+const AU_TO_M: f64 = 149597870700.0;
+const DAY_TO_SEC: f64 = 86400.0;
+
+fn print_usage(program: &str, opts: Options) {
+    let brief = format!("Usage: {} [options]", program);
+    print!("{}", opts.usage(&brief));
+}
+
+fn parse_file(input: &str, system: &mut System) {
+    // Open file
+    let f = match File::open(input) {
+        Ok(m) => { m }
+        Err(e) => { panic!(e.to_string()) }
+    };
+
+    // Use a bufreader to read lines
+    let reader = BufReader::new(f);
+    for line in reader.lines() {
+        let string = line.unwrap();
+        let vec: Vec<&str> = string.split_whitespace().collect();
+        let name: &str = vec[0];
+        let mass: f64 = vec[1].parse().unwrap();
+        let x: f64 = vec[2].parse::<f64>().unwrap() * AU_TO_M;
+        let y: f64 = vec[3].parse::<f64>().unwrap() * AU_TO_M;
+        let z: f64 = vec[4].parse::<f64>().unwrap() * AU_TO_M;
+        let vx: f64 = vec[5].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
+        let vy: f64 = vec[6].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
+        let vz: f64 = vec[7].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
+
+        let part: Particle = Particle::new(name, mass, x, y, z,
+                                           vx, vy, vz);
+        system.add_particle(part);
+    }
+}
 
 fn main() {
-    let sun: system::Particle = system::Particle::new("Sun", 0.0, 0.0, 0.0,
-                                                          0.0, 0.0, 0.0, 1.989e30);
-    let mercury: system::Particle = system::Particle::new("Mercury", -1.1708e10, -5.7384e10, 0.0,
-                                                          4.6276e4, -9.9541e3, 0.0, 3.3020e23);
-    let venus: system::Particle = system::Particle::new("Venus", 6.9283e10, 8.2658e10, 0.0,
-                                                        -2.6894e4, 2.2585e4, 0.0, 4.8690e24);
-    let earth: system::Particle = system::Particle::new("Earth", 1.4960e11, 0.0, 0.0,
-                                                            0.0, 2.98e04, 0.0, 5.972e24);
-    let mars: system::Particle = system::Particle::new("Mars", -1.1055e11, -1.9868e11, 0.0,
-                                                       2.1060e4, -1.1827e4, 0.0, 6.4190e23);
-    let mut system: system::System = system::System::new();
-    system.add_particle(sun);
-    system.add_particle(mercury);
-    system.add_particle(venus);
-    system.add_particle(earth);
-    system.add_particle(mars);
+    // Create a system
+    let mut system = System::new();
+
+    // Collect commandline info
+    let args: Vec<String> = env::args().collect();
+    let program = args[0].clone();
+
+    // Setup commandline options
+    let mut opts = Options::new();
+    opts.reqopt("f", "file", "input file", "NAME");
+    opts.optflag("h", "help", "print this help menu");
+
+    // Parse the arguments
+    let matches = match opts.parse(&args[1..]) {
+        Ok(m) => { m }
+        Err(f) => { panic!(f.to_string()) }
+    };
+
+    // Check for help flag
+    if matches.opt_present("h") {
+        print_usage(&program, opts);
+        return;
+    }
+
+    // Get input file
+    let input = matches.opt_str("f").unwrap();
+
+    parse_file(&input, &mut system);
 
     system.print();
     for _ in 0..DURATION {
