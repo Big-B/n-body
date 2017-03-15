@@ -29,8 +29,12 @@ fn parse_file(input: &str, system: &mut System) {
     // Use a bufreader to read lines
     let reader = BufReader::new(f);
     for line in reader.lines() {
+
+        // Read out the line as a str and split it on whitespace
         let string = line.unwrap();
         let vec: Vec<&str> = string.split_whitespace().collect();
+
+        // Pull out all the fields
         let name: &str = vec[0];
         let mass: f64 = vec[1].parse().unwrap();
         let x: f64 = vec[2].parse::<f64>().unwrap() * AU_TO_M;
@@ -40,8 +44,11 @@ fn parse_file(input: &str, system: &mut System) {
         let vy: f64 = vec[6].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
         let vz: f64 = vec[7].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
 
+        // Create a new particle
         let part: Particle = Particle::new(name, mass, x, y, z,
                                            vx, vy, vz);
+
+        // Place the particle into the system
         system.add_particle(part);
     }
 }
@@ -74,8 +81,10 @@ fn main() {
     // Get input file
     let input = matches.opt_str("f").unwrap();
 
+    // Parse the file
     parse_file(&input, &mut system);
 
+    // Run the simulation
     system.print();
     for _ in 0..DURATION {
         system.update(TIME);
