@@ -67,10 +67,8 @@ fn main() {
     opts.optflag("h", "help", "print this help menu");
 
     // Parse the arguments
-    let matches = match opts.parse(&args[1..]) {
-        Ok(m) => { m }
-        Err(f) => { panic!(f.to_string()) }
-    };
+    let matches = opts.parse(&args[1..])
+        .expect("Bad arguments");
 
     // Check for help flag
     if matches.opt_present("h") {
