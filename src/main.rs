@@ -67,7 +67,7 @@ fn main() {
 
     // Setup commandline options
     let mut opts = Options::new();
-    opts.reqopt("f", "file", "input file", "NAME");
+    opts.optopt("f", "file", "input file", "NAME");
     opts.optflag("h", "help", "print this help menu");
 
     // Parse the arguments
@@ -81,7 +81,8 @@ fn main() {
     }
 
     // Get input file
-    let input = matches.opt_str("f").unwrap();
+    let input = matches.opt_str("f")
+        .expect("A filename is required");
 
     // Parse the file
     parse_file(&input, &mut system);
