@@ -10,6 +10,7 @@ use std::io::BufReader;
 mod system;
 use system::System;
 use system::Particle;
+use system::Point;
 use std::io::BufRead;
 
 const TIME: f64 = 1.0000;
@@ -17,17 +18,15 @@ const DURATION: u64 = 3.154e7 as u64;
 const AU_TO_M: f64 = 149597870700.0;
 const DAY_TO_SEC: f64 = 86400.0;
 
-fn print_usage(program: &str, opts: Options) {
+fn print_usage(program: &str, opts: &Options) {
     let brief = format!("Usage: {} [options]", program);
     print!("{}", opts.usage(&brief));
 }
 
 fn parse_file(input: &str, system: &mut System) {
     // Open file
-    let f = match File::open(input) {
-        Ok(m) => { m }
-        Err(e) => { panic!(e.to_string()) }
-    };
+    let f = File::open(input)
+        .expect("Failed to open file");
 
     // Use a bufreader to read lines
     let reader = BufReader::new(f);
@@ -47,8 +46,10 @@ fn parse_file(input: &str, system: &mut System) {
         let vy: f64 = vec[6].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
         let vz: f64 = vec[7].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
 
+        let point: Point = Point::new(x, y, z);
+
         // Create a new particle
-        let part: Particle = Particle::new(name, mass, x, y, z,
+        let part: Particle = Particle::new(name, mass, point,
                                            vx, vy, vz);
 
         // Place the particle into the system
@@ -75,7 +76,7 @@ fn main() {
 
     // Check for help flag
     if matches.opt_present("h") {
-        print_usage(&program, opts);
+        print_usage(&program, &opts);
         return;
     }
 
