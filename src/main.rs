@@ -1,5 +1,8 @@
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
 extern crate getopts;
 use getopts::Options;
+
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
