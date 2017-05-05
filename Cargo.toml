@@ -5,4 +5,3 @@ authors = ["Brandon Mittman <BrandonMittman@gmail.com>"]
 
 [dependencies]
 getopts = "*"
-clippy = {git = "https://github.com/Manishearth/rust-clippy", optional = true}
