@@ -4,6 +4,7 @@ use getopts::Options;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
+use std::process;
 
 mod system;
 use system::System;
@@ -69,18 +70,24 @@ fn main() {
     opts.optflag("h", "help", "print this help menu");
 
     // Parse the arguments
-    let matches = opts.parse(&args[1..])
-        .expect("Bad arguments");
+    let matches = opts.parse(&args[1..]).unwrap_or_else(|err| {
+        println!("Argument Parsing Error: {}", err);
+        print_usage(&program, &opts);
+
+        process::exit(-1);
+    });
 
     // Check for help flag
     if matches.opt_present("h") {
         print_usage(&program, &opts);
-        return;
+        process::exit(0);
     }
 
     // Get input file
-    let input = matches.opt_str("f")
-        .expect("A filename is required");
+    let input = matches.opt_str("f").unwrap_or_else(|| {
+        println!("A filename is required");
+        process::exit(-1);
+    });
 
     // Parse the file
     parse_file(&input, &mut system);
