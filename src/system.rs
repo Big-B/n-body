@@ -37,7 +37,7 @@ impl Particle {
     pub fn new(name: &str, mass : f64, point: Point,
                vx : f64, vy : f64, vz : f64) -> Particle {
         Particle {name: name.to_string(), mass: mass, position: point,
-            vx: vx, vy: vy, vz: vz, fx: 0_f64, fy: 0_f64, fz: 0_f64}
+        vx: vx, vy: vy, vz: vz, fx: 0_f64, fy: 0_f64, fz: 0_f64}
     }
 
     pub fn add_particle_force(&mut self, other: &Particle) {
@@ -61,42 +61,52 @@ impl Particle {
         self.fy = 0_f64;
         self.fz = 0_f64;
     }
+
+    pub fn set_equal(&mut self, other: &Particle) {
+        self.position.x = other.position.x;
+        self.position.y = other.position.y;
+        self.position.z = other.position.z;
+
+        self.vx = other.vx;
+        self.vy = other.vy;
+        self.vz = other.vz;
+    }
 }
 
 #[derive(Debug)]
 pub struct System {
-    particles: Vec<Particle>,
+    particles0: Vec<Particle>,
+    particles1: Vec<Particle>,
 }
 
 impl System {
     pub fn new() -> System {
-        System {particles: Vec::new()}
+        System {particles0: Vec::new(), particles1: Vec::new()}
     }
 
     pub fn add_particle(&mut self, particle: Particle) {
-        self.particles.push(particle);
+        self.particles0.push(particle.clone());
+        self.particles1.push(particle);
     }
 
     pub fn update(&mut self, time: f64) {
-        let len = self.particles.len();
-        for i in 0..len {
-            for j in 0..len {
+        for (i, part0) in self.particles0.iter_mut().enumerate() {
+            for (j, part1) in self.particles1.iter().enumerate() {
                 if i != j {
-                    let other = self.particles[j].clone();
-                    self.particles[i].add_particle_force(&other);
+                    part0.add_particle_force(part1);
                 }
             }
         }
 
-        for i in 0..len {
-            self.particles[i].update(time);
+        for (i, part) in self.particles0.iter_mut().enumerate() {
+            part.update(time);
+            self.particles1[i].set_equal(part);
         }
     }
 
     pub fn print(&self) {
-        let len = self.particles.len();
-        for i in 0..len {
-            println!("{:?}", self.particles[i]);
+        for part in &self.particles0 {
+            println!("{:?}", part);
         }
     }
 }
