@@ -5,3 +5,4 @@ authors = ["Brandon Mittman <BrandonMittman@gmail.com>"]
 
 [dependencies]
 getopts = "*"
+rayon = "*"

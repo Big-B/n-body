@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
     x: f64,
@@ -42,10 +44,16 @@ impl Particle {
 
     pub fn add_particle_force(&mut self, other: &Particle) {
         let distance = self.position.distance(&other.position);
-        let force = (G * self.mass * other.mass)/(distance.powi(3));
-        self.fx += force * (other.position.x - self.position.x);
-        self.fy += force * (other.position.y - self.position.y);
-        self.fz += force * (other.position.z - self.position.z);
+        if distance != 0_f64 {
+            let force = (G * self.mass * other.mass)/(distance.powi(3));
+            self.fx += force * (other.position.x - self.position.x);
+            self.fy += force * (other.position.y - self.position.y);
+            self.fz += force * (other.position.z - self.position.z);
+        } else {
+            self.fx += 0_f64;
+            self.fy += 0_f64;
+            self.fz += 0_f64;
+        }
     }
 
     pub fn update(&mut self, time: f64) {
@@ -90,17 +98,22 @@ impl System {
     }
 
     pub fn update(&mut self, time: f64) {
-        for (i, part0) in self.particles0.iter_mut().enumerate() {
-            for (j, part1) in self.particles1.iter().enumerate() {
-                if i != j {
+        {
+            let (first, second) = (&mut self.particles0, &self.particles1);
+            first.par_iter_mut().for_each(|part0| {
+                second.iter().for_each(move |part1| {
                     part0.add_particle_force(part1);
-                }
-            }
+                })
+            });
         }
 
-        for (i, part) in self.particles0.iter_mut().enumerate() {
-            part.update(time);
-            self.particles1[i].set_equal(part);
+        {
+            let (first, second) = (&mut self.particles0, &mut self.particles1);
+            second.par_iter_mut().zip(&mut first[..])
+                .for_each(|(sec, fir)| {
+                    fir.update(time);
+                    sec.set_equal(&fir);
+                });
         }
     }
 
