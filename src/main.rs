@@ -6,7 +6,6 @@ use getopts::Options;
 use std::env;
 use std::fs::File;
 use std::io::BufReader;
-use std::io::prelude::*;
 use std::process;
 
 mod system;
@@ -62,9 +61,6 @@ fn parse_file(input: &str, system: &mut System) -> Result<(), Error> {
 }
 
 fn main() {
-    // Get access to stderr
-    let mut stderr = std::io::stderr();
-
     // Create a system
     let mut system = System::new();
 
@@ -79,8 +75,7 @@ fn main() {
 
     // Parse the arguments
     let matches = opts.parse(&args[1..]).unwrap_or_else(|err| {
-        writeln!(&mut stderr, "Argument Parsing Error: {}", err)
-            .expect("Could not write to stderr");
+        eprintln!("Argument Parsing Error: {}", err);
         print_usage(&program, &opts);
 
         process::exit(-1);
@@ -94,15 +89,13 @@ fn main() {
 
     // Get input file
     let input = matches.opt_str("f").unwrap_or_else(|| {
-        writeln!(&mut stderr, "A filename is required")
-            .expect("Could not write to stderr");
+        eprintln!("A filename is required");
         process::exit(-1);
     });
 
     // Parse the file
     parse_file(&input, &mut system).unwrap_or_else(|err| {
-        writeln!(&mut stderr, "Failed to parse file: {}", err)
-            .expect("Could not write to stderr");
+        eprintln!("Failed to parse file: {}", err);
         process::exit(-1);
     });
 
