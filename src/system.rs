@@ -1,5 +1,3 @@
-use rayon::prelude::*;
-
 #[derive(Debug, Clone, Copy)]
 pub struct Point {
     x: f64,
@@ -100,7 +98,7 @@ impl System {
     pub fn update(&mut self, time: f64) {
         {
             let (first, second) = (&mut self.particles0, &self.particles1);
-            first.par_iter_mut().for_each(|part0| {
+            first.iter_mut().for_each(|part0| {
                 second.iter().for_each(move |part1| {
                     part0.add_particle_force(part1);
                 })
@@ -109,10 +107,10 @@ impl System {
 
         {
             let (first, second) = (&mut self.particles0, &mut self.particles1);
-            second.par_iter_mut().zip(&mut first[..])
+            second.iter_mut().zip(&mut first[..])
                 .for_each(|(sec, fir)| {
                     fir.update(time);
-                    sec.set_equal(&fir);
+                    sec.set_equal(fir);
                 });
         }
     }

@@ -1,6 +1,5 @@
 #![feature(iterator_for_each)]
 extern crate getopts;
-extern crate rayon;
 use getopts::Options;
 
 use std::env;

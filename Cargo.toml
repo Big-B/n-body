@@ -1,8 +1,10 @@
 [package]
 name = "n-body"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Brandon Mittman <BrandonMittman@gmail.com>"]
 
+[profile.release]
+panic = 'abort'
+
 [dependencies]
-getopts = "*"
-rayon = "*"
+getopts = "0.2.*"
