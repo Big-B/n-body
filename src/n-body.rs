@@ -1,9 +1,16 @@
 #![feature(iterator_for_each)]
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
+
 extern crate getopts;
 use getopts::Options;
 
 use std::env;
 use std::fs::File;
+use std::path::Path;
+use std::io::prelude::*;
 use std::io::BufReader;
 use std::process;
 
@@ -26,32 +33,15 @@ fn print_usage(program: &str, opts: &Options) {
 
 fn parse_file(input: &str, system: &mut System) -> Result<(), Error> {
 
+    let path = Path::new("particles2.txt");
+
     // Open file
     let f = File::open(input)?;
+    let reader = BufReader::new(f);
 
     // Use a bufreader to read lines
-    let reader = BufReader::new(f);
     for line in reader.lines() {
-
-        // Read out the line as a str and split it on whitespace
-        let string = line.unwrap();
-        let vec: Vec<&str> = string.split_whitespace().collect();
-
-        // Pull out all the fields
-        let name: &str = vec[0];
-        let mass: f64 = vec[1].parse().unwrap();
-        let x: f64 = vec[2].parse::<f64>().unwrap() * AU_TO_M;
-        let y: f64 = vec[3].parse::<f64>().unwrap() * AU_TO_M;
-        let z: f64 = vec[4].parse::<f64>().unwrap() * AU_TO_M;
-        let vx: f64 = vec[5].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
-        let vy: f64 = vec[6].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
-        let vz: f64 = vec[7].parse::<f64>().unwrap() * AU_TO_M / DAY_TO_SEC;
-
-        let point: Point = Point::new(x, y, z);
-
-        // Create a new particle
-        let part: Particle = Particle::new(name, mass, point,
-                                           vx, vy, vz);
+        let part: Particle = serde_json::from_str(&line.unwrap())?;
 
         // Place the particle into the system
         system.add_particle(part);

@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct Point {
     x: f64,
     y: f64,
@@ -17,7 +17,7 @@ impl Point {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Particle {
     name : String,
     mass : f64,
