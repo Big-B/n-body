@@ -1,24 +1,23 @@
 [package]
 name = "n-body"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Brandon Mittman <BrandonMittman@gmail.com>"]
+description = "An n-body simulator"
+repository = "https://github.com/Big-B/n-body"
+license = "GPL-3.0"
 
 [profile.release]
 panic = 'abort'
-
-[[bin]]
-name = "get-bodies"
-path = "src/get-bodies.rs"
 
 [[bin]]
 name = "n-body"
 path = "src/n-body.rs"
 
 [dependencies]
-getopts      = "0.2.*"
-serde        = "1.0.*"
-serde_derive = "1.0.*"
-serde_json   = "1.0.*"
+clap         = "*"
+serde        = "*"
+serde_derive = "*"
+serde_json   = "*"
 reqwest      = "*"
 select       = "*"
 regex        = "*"
