@@ -108,7 +108,7 @@ fn download_particles(output: &str) -> Result<(), Error> {
     let mut writer = BufWriter::new(f);
 
     // Download command -- download the data
-    for i in 0...1000 {
+    for i in 0..=1000 {
         // Generate url for 1000 objects. Not all will be valid
         let url = format!("https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&COMMAND='{}'&MAKE_EPHEM='YES'&TABLE_TYPE='VECTOR'&START_TIME='2016-01-01'&STOP_TIME='2016-01-02'&STEP_SIZE='2%20d'&QUANTITIES='1,9,20,23,24'&CSV_FORMAT='YES'&CENTER='500@0'", i);
 
