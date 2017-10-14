@@ -61,7 +61,7 @@ fn main() {
         let mut system = System::new();
 
         // Parse the file
-        parse_file(&file, &mut system).unwrap_or_else(|err| {
+        parse_file(file, &mut system).unwrap_or_else(|err| {
             eprintln!("Failed to parse file: {}", err);
             process::exit(-1);
         });
@@ -122,8 +122,8 @@ fn download_particles(output: &str) -> Result<(), Error> {
             if let Ok(name) = get_name(&page) {
                 // Parse the position and velocity
                 if let Ok(pos_vel) = get_pos_vel(&page, &name, mass) {
-                    writer.write(serde_json::to_string(&pos_vel).unwrap().as_bytes())?;
-                    writer.write(b"\n")?;
+                    writer.write_all(serde_json::to_string(&pos_vel).unwrap().as_bytes())?;
+                    writer.write_all(b"\n")?;
                 }
             }
         }
