@@ -16,7 +16,11 @@ use std::io::{BufReader, BufWriter};
 use std::process;
 
 mod system;
-use system::{System, Particle, Point};
+mod point;
+mod particle;
+use system::System;
+use point::Point;
+use particle::Particle;
 use std::io::{BufRead, Error, Read, Write};
 use regex::Regex;
 
