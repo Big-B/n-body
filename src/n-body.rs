@@ -134,7 +134,7 @@ fn download_particles(output: &str) -> Result<(), Error> {
         print!("{}%\r", i/10);
         io::stdout().flush()?;
     }
-    println!("");
+    println!();
     Ok(())
 }
 
