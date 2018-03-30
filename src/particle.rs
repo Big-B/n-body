@@ -19,8 +19,8 @@ const G: f64 = 6.67408e-11;
 impl Particle {
     pub fn new(name: &str, mass : f64, point: Point,
                vx : f64, vy : f64, vz : f64) -> Particle {
-        Particle {name: name.to_string(), mass: mass, position: point,
-        vx: vx, vy: vy, vz: vz, fx: 0_f64, fy: 0_f64, fz: 0_f64}
+        Particle {name: name.to_string(), mass, position: point,
+        vx, vy, vz, fx: 0_f64, fy: 0_f64, fz: 0_f64}
     }
 
     pub fn add_particle_force(&mut self, other: &Particle) {

@@ -1,5 +1,4 @@
 #![feature(iterator_for_each)]
-#![feature(inclusive_range_syntax)]
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
