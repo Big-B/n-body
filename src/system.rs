@@ -38,7 +38,7 @@ impl System {
 
     pub fn print(&self) {
         for part in &self.particles0 {
-            println!("{:?}", part);
+            println!("{}\n", part);
         }
     }
 }

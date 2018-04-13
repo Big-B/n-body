@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct Point {
     pub x: f64,
@@ -14,6 +16,15 @@ impl Point {
     pub fn distance(&self, other: &Point) -> f64 {
         ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)
          + (self.z - other.z).powi(2)).sqrt()
+    }
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "X: {}\n", self.x)?;
+        write!(f, "Y: {}\n", self.y)?;
+        write!(f, "Z: {}", self.z)?;
+        Ok(())
     }
 }
 

@@ -1,3 +1,4 @@
+use std::fmt;
 use Point;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -11,6 +12,18 @@ pub struct Particle {
     fx : f64,
     fy : f64,
     fz : f64,
+}
+
+impl fmt::Display for Particle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}:\n", self.name)?;
+        write!(f, "Mass: {}\n", self.mass)?;
+        write!(f, "Position: {}\n", self.position)?;
+        write!(f, "Velocity X: {}\n", self.vx)?;
+        write!(f, "Velocity Y: {}\n", self.vy)?;
+        write!(f, "Velocity Z: {}", self.vz)?;
+        Ok(())
+    }
 }
 
 /// The gravitational constant as defined in wikipedia:

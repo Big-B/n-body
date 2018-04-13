@@ -1,6 +1,6 @@
 [package]
 name = "n-body"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Brandon Mittman <BrandonMittman@gmail.com>"]
 description = "An n-body simulator"
 repository = "https://github.com/Big-B/n-body"

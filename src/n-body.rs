@@ -25,8 +25,6 @@ use regex::Regex;
 
 use clap::{Arg, App, SubCommand};
 
-const TIME: f64 = 1.0000;
-const DURATION: u64 = 3.154e7 as u64;
 const KM_TO_M: f64 = 1000.0;
 
 fn main() {
@@ -42,7 +40,23 @@ fn main() {
                          .value_name("FILE")
                          .help("Input files of particles")
                          .required(true)
-                         .takes_value(true)))
+                         .takes_value(true))
+                    .arg(Arg::with_name("duration")
+                         .short("d")
+                         .long("duration")
+                         .value_name("ITERATIONS")
+                         .help("Number of iterations to run the sim for")
+                         .required(false)
+                         .takes_value(true)
+                         .default_value("3.154e7"))
+                    .arg(Arg::with_name("granularity")
+                         .short("g")
+                         .long("granularity")
+                         .value_name("SECONDS")
+                         .help("Size of simulation steps in seconds")
+                         .required(false)
+                         .takes_value(true)
+                         .default_value("1")))
         .subcommand(SubCommand::with_name("download")
                     .about("download solar system data")
                     .arg(Arg::with_name("output")
@@ -69,10 +83,14 @@ fn main() {
             process::exit(-1);
         });
 
+        // Get the sim duration and granularity arguments
+        let duration = matches.value_of("duration").unwrap().trim().parse::<f64>().unwrap();
+        let granularity = matches.value_of("granularity").unwrap().trim().parse::<f64>().unwrap();
+
         // Run the sim
         system.print();
-        for _ in 0..DURATION {
-            system.update(TIME);
+        for i in 0..duration as u64 {
+            system.update(granularity);
         }
         system.print();
 
