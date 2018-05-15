@@ -1,25 +1,21 @@
 #![feature(iterator_for_each)]
 #[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-#[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate lazy_static;
 extern crate reqwest;
 extern crate regex;
+extern crate n_body;
+extern crate serde_json;
 
 use std::fs::File;
 use std::io;
 use std::io::{BufReader, BufWriter};
 use std::process;
 
-mod system;
-mod point;
-mod particle;
-use system::System;
-use point::Point;
-use particle::Particle;
+use n_body::system::System;
+use n_body::point::Point;
+use n_body::particle::Particle;
 use std::io::{BufRead, Error, Read, Write};
 use regex::Regex;
 
@@ -28,7 +24,7 @@ use clap::{Arg, App, SubCommand};
 const KM_TO_M: f64 = 1000.0;
 
 fn main() {
-    let matches = App::new("n-body")
+    let matches = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!("\n"))
         .about(crate_description!())
@@ -89,7 +85,7 @@ fn main() {
 
         // Run the sim
         system.print();
-        for i in 0..duration as u64 {
+        for _ in 0..duration as u64 {
             system.update(granularity);
         }
         system.print();

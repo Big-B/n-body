@@ -1,4 +1,4 @@
-use Particle;
+use particle::Particle;
 
 #[derive(Debug)]
 pub struct System {

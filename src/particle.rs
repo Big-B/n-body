@@ -1,5 +1,5 @@
 use std::fmt;
-use Point;
+use point::Point;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Particle {
