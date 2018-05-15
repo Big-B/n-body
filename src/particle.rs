@@ -16,11 +16,11 @@ pub struct Particle {
 
 impl fmt::Display for Particle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}:\n", self.name)?;
-        write!(f, "Mass: {}\n", self.mass)?;
-        write!(f, "Position: {}\n", self.position)?;
-        write!(f, "Velocity X: {}\n", self.vx)?;
-        write!(f, "Velocity Y: {}\n", self.vy)?;
+        writeln!(f, "{}:", self.name)?;
+        writeln!(f, "Mass: {}", self.mass)?;
+        writeln!(f, "Position: {}", self.position)?;
+        writeln!(f, "Velocity X: {}", self.vx)?;
+        writeln!(f, "Velocity Y: {}", self.vy)?;
         write!(f, "Velocity Z: {}", self.vz)?;
         Ok(())
     }

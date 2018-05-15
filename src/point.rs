@@ -21,8 +21,8 @@ impl Point {
 
 impl fmt::Display for Point {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "X: {}\n", self.x)?;
-        write!(f, "Y: {}\n", self.y)?;
+        writeln!(f, "X: {}", self.x)?;
+        writeln!(f, "Y: {}", self.y)?;
         write!(f, "Z: {}", self.z)?;
         Ok(())
     }

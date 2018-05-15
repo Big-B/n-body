@@ -1,6 +1,6 @@
 use particle::Particle;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct System {
     particles0: Vec<Particle>,
     particles1: Vec<Particle>,
