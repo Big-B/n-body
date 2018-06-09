@@ -12,10 +12,10 @@ lto = true
 
 [dependencies]
 clap         = "*"
+lazy_static  = "*"
+regex        = "*"
+reqwest      = "*"
+select       = "*"
 serde        = "*"
 serde_derive = "*"
 serde_json   = "*"
-reqwest      = "*"
-select       = "*"
-regex        = "*"
-lazy_static  = "*"

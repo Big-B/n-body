@@ -3,9 +3,9 @@
 extern crate clap;
 #[macro_use]
 extern crate lazy_static;
-extern crate reqwest;
-extern crate regex;
 extern crate n_body;
+extern crate regex;
+extern crate reqwest;
 extern crate serde_json;
 
 use std::fs::File;
@@ -13,13 +13,13 @@ use std::io;
 use std::io::{BufReader, BufWriter};
 use std::process;
 
-use n_body::system::System;
-use n_body::point::Point;
 use n_body::particle::Particle;
-use std::io::{BufRead, Error, Read, Write};
+use n_body::point::Point;
+use n_body::system::System;
 use regex::Regex;
+use std::io::{BufRead, Error, Read, Write};
 
-use clap::{Arg, App, SubCommand};
+use clap::{App, Arg, SubCommand};
 
 const KM_TO_M: f64 = 1000.0;
 
@@ -28,46 +28,56 @@ fn main() {
         .version(crate_version!())
         .author(crate_authors!("\n"))
         .about(crate_description!())
-        .subcommand(SubCommand::with_name("run")
-                    .about("run the simulation")
-                    .arg(Arg::with_name("file")
-                         .short("f")
-                         .long("file")
-                         .value_name("FILE")
-                         .help("Input files of particles")
-                         .required(true)
-                         .takes_value(true))
-                    .arg(Arg::with_name("duration")
-                         .short("d")
-                         .long("duration")
-                         .value_name("ITERATIONS")
-                         .help("Number of iterations to run the sim for")
-                         .required(false)
-                         .takes_value(true)
-                         .default_value("3.154e7"))
-                    .arg(Arg::with_name("granularity")
-                         .short("g")
-                         .long("granularity")
-                         .value_name("SECONDS")
-                         .help("Size of simulation steps in seconds")
-                         .required(false)
-                         .takes_value(true)
-                         .default_value("1")))
-        .subcommand(SubCommand::with_name("download")
-                    .about("download solar system data")
-                    .arg(Arg::with_name("output")
-                         .short("o")
-                         .long("output-file")
-                         .value_name("OUT")
-                         .help("File to put downloaded data")
-                         .required(true)
-                         .takes_value(true)))
+        .subcommand(
+            SubCommand::with_name("run")
+                .about("run the simulation")
+                .arg(
+                    Arg::with_name("file")
+                        .short("f")
+                        .long("file")
+                        .value_name("FILE")
+                        .help("Input files of particles")
+                        .required(true)
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("duration")
+                        .short("d")
+                        .long("duration")
+                        .value_name("ITERATIONS")
+                        .help("Number of iterations to run the sim for")
+                        .required(false)
+                        .takes_value(true)
+                        .default_value("3.154e7"),
+                )
+                .arg(
+                    Arg::with_name("granularity")
+                        .short("g")
+                        .long("granularity")
+                        .value_name("SECONDS")
+                        .help("Size of simulation steps in seconds")
+                        .required(false)
+                        .takes_value(true)
+                        .default_value("1"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("download")
+                .about("download solar system data")
+                .arg(
+                    Arg::with_name("output")
+                        .short("o")
+                        .long("output-file")
+                        .value_name("OUT")
+                        .help("File to put downloaded data")
+                        .required(true)
+                        .takes_value(true),
+                ),
+        )
         .get_matches();
 
-
     // Which mode are we running in ?
-    if let Some(matches) = matches.subcommand_matches("run")
-    {
+    if let Some(matches) = matches.subcommand_matches("run") {
         // Run command -- run the simulation
         // Unwrap because it's a required argument
         let file = matches.value_of("file").unwrap();
@@ -80,8 +90,18 @@ fn main() {
         });
 
         // Get the sim duration and granularity arguments
-        let duration = matches.value_of("duration").unwrap().trim().parse::<f64>().unwrap();
-        let granularity = matches.value_of("granularity").unwrap().trim().parse::<f64>().unwrap();
+        let duration = matches
+            .value_of("duration")
+            .unwrap()
+            .trim()
+            .parse::<f64>()
+            .unwrap();
+        let granularity = matches
+            .value_of("granularity")
+            .unwrap()
+            .trim()
+            .parse::<f64>()
+            .unwrap();
 
         // Run the sim
         system.print();
@@ -89,13 +109,11 @@ fn main() {
             system.update(granularity);
         }
         system.print();
-
     } else if let Some(matches) = matches.subcommand_matches("download") {
-        download_particles(matches.value_of("output").unwrap())
-            .unwrap_or_else(|err| {
-                eprintln!("Failed to download data: {}", err);
-                process::exit(-1);
-            });
+        download_particles(matches.value_of("output").unwrap()).unwrap_or_else(|err| {
+            eprintln!("Failed to download data: {}", err);
+            process::exit(-1);
+        });
     } else {
         // Not a valid mode, print error and usage
         eprintln!("{}", matches.usage());
@@ -104,7 +122,6 @@ fn main() {
 }
 
 fn parse_file(input: &str, system: &mut System) -> Result<(), Error> {
-
     // Open file
     let f = File::open(input)?;
     let reader = BufReader::new(f);
@@ -131,7 +148,10 @@ fn download_particles(output: &str) -> Result<(), Error> {
 
         // Grab the page
         let mut page = String::new();
-        reqwest::get(&url).unwrap().read_to_string(&mut page).unwrap();
+        reqwest::get(&url)
+            .unwrap()
+            .read_to_string(&mut page)
+            .unwrap();
 
         // Parse the mass data
         if let Ok(mass) = get_mass(&page) {
@@ -144,7 +164,7 @@ fn download_particles(output: &str) -> Result<(), Error> {
                 }
             }
         }
-        print!("{}%\r", i/10);
+        print!("{}%\r", i / 10);
         io::stdout().flush()?;
     }
     println!();
@@ -153,9 +173,7 @@ fn download_particles(output: &str) -> Result<(), Error> {
 
 fn get_name(lines: &str) -> Result<String, String> {
     lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"Target\s*body\s*name:\s*([[:alnum:]]*)")
-            .unwrap();
+        static ref RE: Regex = Regex::new(r"Target\s*body\s*name:\s*([[:alnum:]]*)").unwrap();
     }
 
     if let Some(cap) = RE.captures(lines) {
@@ -177,8 +195,7 @@ fn get_mass(lines: &str) -> Result<f64, String> {
     // we'll multiply it to.
     lazy_static! {
         static ref RE: Regex =
-            Regex::new(r"Mass.*\(?10\^(\d*) kg\s*\)?\s*[=~]\s*(\d+\.?\d*)")
-            .unwrap();
+            Regex::new(r"Mass.*\(?10\^(\d*) kg\s*\)?\s*[=~]\s*(\d+\.?\d*)").unwrap();
     }
 
     // Search all the input
@@ -203,9 +220,7 @@ fn get_pos_vel(lines: &str, name: &str, mass: f64) -> Result<Particle, String> {
     // that are numbers of the form -1.436E+09. The numbers can be
     // positive or negative as well as the exponents.
     lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"(?:\-?\d*\.*\d*E[\+\-]\d*,\s+){6}")
-            .unwrap();
+        static ref RE: Regex = Regex::new(r"(?:\-?\d*\.*\d*E[\+\-]\d*,\s+){6}").unwrap();
     }
 
     // Capture the values
@@ -217,13 +232,18 @@ fn get_pos_vel(lines: &str, name: &str, mass: f64) -> Result<Particle, String> {
 
             // There's always an extra empty one, get rid of it
             nums.pop();
-            Ok(Particle::new(name.trim(), mass,
-                Point::new(nums[0].trim().parse::<f64>().unwrap() * KM_TO_M,
-                nums[1].trim().parse::<f64>().unwrap() * KM_TO_M,
-                nums[2].trim().parse::<f64>().unwrap() * KM_TO_M),
+            Ok(Particle::new(
+                name.trim(),
+                mass,
+                Point::new(
+                    nums[0].trim().parse::<f64>().unwrap() * KM_TO_M,
+                    nums[1].trim().parse::<f64>().unwrap() * KM_TO_M,
+                    nums[2].trim().parse::<f64>().unwrap() * KM_TO_M,
+                ),
                 nums[3].trim().parse::<f64>().unwrap() * KM_TO_M,
                 nums[4].trim().parse::<f64>().unwrap() * KM_TO_M,
-                nums[5].trim().parse::<f64>().unwrap() * KM_TO_M))
+                nums[5].trim().parse::<f64>().unwrap() * KM_TO_M,
+            ))
         } else {
             Err("Position/Velocity Regex Error".to_string())
         }

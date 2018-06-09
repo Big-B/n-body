@@ -9,13 +9,13 @@ pub struct Point {
 
 impl Point {
     pub fn new(x: f64, y: f64, z: f64) -> Point {
-        Point{x, y, z}
+        Point { x, y, z }
     }
 
     /// Calculate the distance to another point
     pub fn distance(&self, other: &Point) -> f64 {
-        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)
-         + (self.z - other.z).powi(2)).sqrt()
+        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2) + (self.z - other.z).powi(2))
+            .sqrt()
     }
 }
 
