@@ -7,12 +7,12 @@ repository = "https://github.com/Big-B/n-body"
 license = "GPL-3.0"
 
 [profile.release]
-panic = 'abort'
 lto = true
 
 [dependencies]
 clap         = "*"
 lazy_static  = "*"
+rayon        = "*"
 regex        = "*"
 reqwest      = "*"
 select       = "*"
