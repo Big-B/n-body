@@ -83,8 +83,8 @@ impl Particle {
 
 #[cfg(test)]
 mod tests {
-    use test::Bencher;
     use super::*;
+    use test::Bencher;
 
     #[test]
     fn set_equal_position() {
