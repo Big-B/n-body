@@ -1,3 +1,4 @@
+#![feature(euclidean_division)]
 #[macro_use]
 extern crate clap;
 #[macro_use]
@@ -6,6 +7,18 @@ extern crate n_body;
 extern crate regex;
 extern crate reqwest;
 extern crate serde_json;
+
+// Graphics
+extern crate piston;
+extern crate graphics;
+extern crate glutin_window;
+extern crate opengl_graphics;
+
+use piston::window::WindowSettings;
+use piston::event_loop::*;
+use piston::input::*;
+use glutin_window::GlutinWindow as Window;
+use opengl_graphics::{GlGraphics, OpenGL};
 
 use std::fs::File;
 use std::io;
@@ -21,6 +34,44 @@ use std::io::{BufRead, Error, Read, Write};
 use clap::{App, Arg, SubCommand};
 
 const KM_TO_M: f64 = 1000.0;
+
+pub struct PApp {
+    gl: GlGraphics,
+}
+
+impl PApp {
+    fn render(&mut self, args: &RenderArgs, system: &System, x_max: f64, y_max: f64, mass_max: f64) {
+        use graphics::*;
+
+        let (x, y) = ((args.width / 2) as f64,
+        (args.height / 2) as f64);
+
+        let n_x = x_max / x;
+        let n_y = y_max / y;
+        let n_mass = 100.0 * mass_max / x.max(y);
+
+        self.gl.draw(args.viewport(), |c, gl| {
+            // Clear the screen.
+            clear(color::BLACK, gl);
+            system.get_particles().iter().for_each(|part| {
+                let ellipse = ellipse::circle(0.0, 0.0, 5.0_f64.max(part.get_mass() / n_mass));
+                let x_pos = part.get_position().x / n_x;
+                let y_pos = part.get_position().y / n_y;
+                let transform = c.transform.trans(x, y)
+                    .trans(x_pos, y_pos);
+
+                // Draw an
+                graphics::ellipse(color::WHITE, ellipse, transform, gl);
+            });
+        });
+    }
+
+    fn update(&mut self, args: &UpdateArgs, system: &mut System, granularity: f64) {
+        for _ in 0..2000 {
+            system.update(granularity);
+        }
+    }
+}
 
 fn main() {
     let matches = App::new(crate_name!())
@@ -58,6 +109,11 @@ fn main() {
                         .required(false)
                         .takes_value(true)
                         .default_value("1"),
+                ).arg(
+                    Arg::with_name("visual")
+                        .short("V")
+                        .long("visual")
+                        .help("Display simulation"),
                 ),
         )
         .subcommand(
@@ -102,12 +158,17 @@ fn main() {
             .parse::<f64>()
             .unwrap();
 
-        // Run the sim
-        system.print();
-        for _ in 0..duration as u64 {
-            system.update(granularity);
+        if matches.is_present("visual") {
+            draw_window(&mut system, granularity);
+        } else {
+
+            // Run the sim
+            system.print();
+            for _ in 0..duration as u64 {
+                system.update(granularity);
+            }
+            system.print();
         }
-        system.print();
     } else if let Some(matches) = matches.subcommand_matches("download") {
         download_particles(matches.value_of("output").unwrap()).unwrap_or_else(|err| {
             eprintln!("Failed to download data: {}", err);
@@ -133,6 +194,46 @@ fn parse_file(input: &str, system: &mut System) -> Result<(), Error> {
         system.add_particle(part);
     }
     Ok(())
+}
+
+fn draw_window(system: &mut System, granularity: f64) {
+    let opengl = OpenGL::V3_2;
+
+    let mut window: Window = WindowSettings::new(
+        "spinning-square",
+        [200, 200]
+    )
+        .opengl(opengl)
+        .exit_on_esc(true)
+        .build()
+        .unwrap();
+
+    let x_max = system.get_particles().iter().map(|part| {
+        part.get_position().x
+    }).fold(0./0., f64::max);
+
+    let y_max = system.get_particles().iter().map(|part| {
+        part.get_position().y
+    }).fold(0./0., f64::max);
+
+    let mass_max = system.get_particles().iter().map(|part| {
+        part.get_mass()
+    }).fold(0./0., f64::max);
+
+    let mut app = PApp {
+        gl: GlGraphics::new(opengl),
+    };
+
+    let mut events = Events::new(EventSettings::new());
+    while let Some(e) = events.next(&mut window) {
+        if let Some(r) = e.render_args() {
+            app.render(&r, system, x_max, y_max, mass_max);
+        }
+
+        if let Some(u) = e.update_args() {
+            app.update(&u, system, granularity);
+        }
+    }
 }
 
 fn download_particles(output: &str) -> Result<(), Error> {

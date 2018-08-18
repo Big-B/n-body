@@ -79,6 +79,14 @@ impl Particle {
         self.vy = other.vy;
         self.vz = other.vz;
     }
+
+    pub fn get_position(&self) -> Point {
+        self.position
+    }
+
+    pub fn get_mass(&self) -> f64 {
+        self.mass
+    }
 }
 
 #[cfg(test)]

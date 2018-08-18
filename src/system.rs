@@ -52,4 +52,8 @@ impl System {
             println!("{}\n", part);
         }
     }
+
+    pub fn get_particles(&self) -> &Vec<Particle> {
+        &self.particles0
+    }
 }
