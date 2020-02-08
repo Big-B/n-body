@@ -5,16 +5,17 @@ authors = ["Brandon Mittman <BrandonMittman@gmail.com>"]
 description = "An n-body simulator"
 repository = "https://github.com/Big-B/n-body"
 license = "GPL-3.0"
+edition = "2018"
 
 [profile.release]
-lto = true
+debug = true
 
 [dependencies]
 clap         = "*"
 lazy_static  = "*"
 rayon        = "*"
 regex        = "*"
-reqwest      = "*"
+reqwest      = {version = "*", features = ["blocking"]}
 select       = "*"
 serde        = "*"
 serde_derive = "*"

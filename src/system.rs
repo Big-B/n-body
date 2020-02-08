@@ -1,4 +1,4 @@
-use particle::Particle;
+use crate::particle::Particle;
 
 #[derive(Debug, Default)]
 pub struct System {

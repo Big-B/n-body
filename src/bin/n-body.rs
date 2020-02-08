@@ -1,24 +1,17 @@
-#[macro_use]
-extern crate clap;
-#[macro_use]
-extern crate lazy_static;
-extern crate n_body;
-extern crate regex;
-extern crate reqwest;
-extern crate serde_json;
-
 use std::fs::File;
 use std::io;
 use std::io::{BufReader, BufWriter};
 use std::process;
 
+use lazy_static::lazy_static;
 use n_body::particle::Particle;
 use n_body::point::Point;
 use n_body::system::System;
 use regex::Regex;
+use reqwest::blocking::Client;
 use std::io::{BufRead, Error, Read, Write};
 
-use clap::{App, Arg, SubCommand};
+use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg, SubCommand};
 
 const KM_TO_M: f64 = 1000.0;
 
@@ -139,6 +132,7 @@ fn download_particles(output: &str) -> Result<(), Error> {
     // Open file
     let f = File::create(output)?;
     let mut writer = BufWriter::new(f);
+    let client = reqwest::blocking::Client::new();
 
     // Download command -- download the data
     for i in 0..=1000 {
@@ -146,11 +140,7 @@ fn download_particles(output: &str) -> Result<(), Error> {
         let url = format!("https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&COMMAND='{}'&MAKE_EPHEM='YES'&TABLE_TYPE='VECTOR'&START_TIME='2016-01-01'&STOP_TIME='2016-01-02'&STEP_SIZE='2%20d'&QUANTITIES='1,9,20,23,24'&CSV_FORMAT='YES'&CENTER='500@0'", i);
 
         // Grab the page
-        let mut page = String::new();
-        reqwest::get(&url)
-            .unwrap()
-            .read_to_string(&mut page)
-            .unwrap();
+        let page: String = client.get(&url).send().unwrap().text().unwrap();
 
         // Parse the mass data
         if let Ok(mass) = get_mass(&page) {

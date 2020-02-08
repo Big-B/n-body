@@ -1,4 +1,4 @@
-use point::Point;
+use crate::point::Point;
 use std::fmt;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
