@@ -8,8 +8,9 @@ use n_body::particle::Particle;
 use n_body::point::Point;
 use n_body::system::System;
 use regex::Regex;
-use reqwest::blocking::Client;
-use std::io::{BufRead, Error, Read, Write};
+use std::io::{BufRead, Error, Write};
+use std::sync::{Arc, Mutex};
+use rayon::prelude::*;
 
 use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg, SubCommand};
 
@@ -131,11 +132,12 @@ fn parse_file(input: &str, system: &mut System) -> Result<(), Error> {
 fn download_particles(output: &str) -> Result<(), Error> {
     // Open file
     let f = File::create(output)?;
-    let mut writer = BufWriter::new(f);
+    let writer = Arc::new(Mutex::new(BufWriter::new(f)));
+    let count = Arc::new(Mutex::new(0));
     let client = reqwest::blocking::Client::new();
 
     // Download command -- download the data
-    for i in 0..=1000 {
+    (0..=1000).into_par_iter().for_each(|i| {
         // Generate url for 1000 objects. Not all will be valid
         let url = format!("https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&COMMAND='{}'&MAKE_EPHEM='YES'&TABLE_TYPE='VECTOR'&START_TIME='2016-01-01'&STOP_TIME='2016-01-02'&STEP_SIZE='2%20d'&QUANTITIES='1,9,20,23,24'&CSV_FORMAT='YES'&CENTER='500@0'", i);
 
@@ -148,14 +150,19 @@ fn download_particles(output: &str) -> Result<(), Error> {
             if let Ok(name) = get_name(&page) {
                 // Parse the position and velocity
                 if let Ok(pos_vel) = get_pos_vel(&page, &name, mass) {
-                    writer.write_all(serde_json::to_string(&pos_vel).unwrap().as_bytes())?;
-                    writer.write_all(b"\n")?;
+                    let mut writer = writer.lock().unwrap();
+                    writer.write_all(serde_json::to_string(&pos_vel).unwrap().as_bytes()).unwrap();
+                    writer.write_all(b"\n").unwrap();
                 }
             }
         }
-        print!("{}%\r", i / 10);
-        io::stdout().flush()?;
-    }
+
+        // Increment count and provide update to user
+        let mut count = count.lock().unwrap();
+        *count += 1;
+        print!("{}%\r", *count / 10);
+        io::stdout().flush().unwrap();
+    });
     println!();
     Ok(())
 }
