@@ -135,9 +135,10 @@ fn download_particles(output: &str) -> Result<(), Error> {
     let writer = Arc::new(Mutex::new(BufWriter::new(f)));
     let count = Arc::new(Mutex::new(0));
     let client = reqwest::blocking::Client::new();
+    let max = 1000;
 
     // Download command -- download the data
-    (0..=1000).into_par_iter().for_each(|i| {
+    (0..=max).into_par_iter().for_each(|i| {
         // Generate url for 1000 objects. Not all will be valid
         let url = format!("https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&COMMAND='{}'&MAKE_EPHEM='YES'&TABLE_TYPE='VECTOR'&START_TIME='2016-01-01'&STOP_TIME='2016-01-02'&STEP_SIZE='2%20d'&QUANTITIES='1,9,20,23,24'&CSV_FORMAT='YES'&CENTER='500@0'", i);
 
@@ -160,7 +161,7 @@ fn download_particles(output: &str) -> Result<(), Error> {
         // Increment count and provide update to user
         let mut count = count.lock().unwrap();
         *count += 1;
-        print!("{}%\r", *count / 10);
+        print!("{}%\r", *count * 100 / max);
         io::stdout().flush().unwrap();
     });
     println!();
