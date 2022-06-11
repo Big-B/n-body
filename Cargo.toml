@@ -11,7 +11,7 @@ edition = "2021"
 debug = true
 
 [dependencies]
-clap         = "*"
+clap         = {version = "*", features = ["derive"]}
 lazy_static  = "*"
 rayon        = "*"
 regex        = "*"

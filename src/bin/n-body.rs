@@ -1,120 +1,96 @@
+use clap::Parser;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
 use std::io::{BufReader, BufWriter};
+use std::path::{Path, PathBuf};
 use std::process;
 
 use lazy_static::lazy_static;
 use n_body::particle::Particle;
 use n_body::point::Point;
 use n_body::system::System;
+use rayon::prelude::*;
 use regex::Regex;
 use std::io::{BufRead, Error, Write};
 use std::sync::{Arc, Mutex};
-use rayon::prelude::*;
-
-use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg, SubCommand};
 
 const KM_TO_M: f64 = 1000.0;
 
+#[derive(clap::Parser)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    #[clap(subcommand)]
+    action: Action,
+}
+
+#[derive(clap::Subcommand)]
+enum Action {
+    Run {
+        #[clap(short, long = "file", help = "Input file of particles", parse(try_from_os_str = get_path))]
+        file: PathBuf,
+        #[clap(
+            short,
+            long = "duration",
+            help = "Number of iterations to run the sim for",
+            default_value_t = 3.154e7
+        )]
+        duration: f64,
+        #[clap(
+            short,
+            long = "granularity",
+            help = "Size of simulation steps in seconds",
+            default_value_t = 1.0
+        )]
+        granularity: f64,
+    },
+    Download {
+        #[clap(short, long = "output-file", help = "File to put downloaded data", parse(try_from_os_str = get_path))]
+        output: PathBuf,
+    },
+}
+
+fn get_path(input: &OsStr) -> Result<PathBuf, String> {
+    let mut buf = PathBuf::new();
+    buf.push(input);
+    Ok(buf)
+}
+
 fn main() {
-    let matches = App::new(crate_name!())
-        .version(crate_version!())
-        .author(crate_authors!("\n"))
-        .about(crate_description!())
-        .subcommand(
-            SubCommand::with_name("run")
-                .about("run the simulation")
-                .arg(
-                    Arg::with_name("file")
-                        .short("f")
-                        .long("file")
-                        .value_name("FILE")
-                        .help("Input files of particles")
-                        .required(true)
-                        .takes_value(true),
-                )
-                .arg(
-                    Arg::with_name("duration")
-                        .short("d")
-                        .long("duration")
-                        .value_name("ITERATIONS")
-                        .help("Number of iterations to run the sim for")
-                        .required(false)
-                        .takes_value(true)
-                        .default_value("3.154e7"),
-                )
-                .arg(
-                    Arg::with_name("granularity")
-                        .short("g")
-                        .long("granularity")
-                        .value_name("SECONDS")
-                        .help("Size of simulation steps in seconds")
-                        .required(false)
-                        .takes_value(true)
-                        .default_value("1"),
-                ),
-        )
-        .subcommand(
-            SubCommand::with_name("download")
-                .about("download solar system data")
-                .arg(
-                    Arg::with_name("output")
-                        .short("o")
-                        .long("output-file")
-                        .value_name("OUT")
-                        .help("File to put downloaded data")
-                        .required(true)
-                        .takes_value(true),
-                ),
-        )
-        .get_matches();
+    let args = Args::parse();
 
-    // Which mode are we running in ?
-    if let Some(matches) = matches.subcommand_matches("run") {
-        // Run command -- run the simulation
-        // Unwrap because it's a required argument
-        let file = matches.value_of("file").unwrap();
-        let mut system = System::new();
+    match args.action {
+        Action::Run {
+            file,
+            duration,
+            granularity,
+        } => {
+            // Run command -- run the simulation
+            let mut system = System::new();
 
-        // Parse the file
-        parse_file(file, &mut system).unwrap_or_else(|err| {
-            eprintln!("Failed to parse file: {}", err);
-            process::exit(-1);
-        });
+            // Parse the file
+            parse_file(&file, &mut system).unwrap_or_else(|err| {
+                eprintln!("Failed to parse file: {}", err);
+                process::exit(-1);
+            });
 
-        // Get the sim duration and granularity arguments
-        let duration = matches
-            .value_of("duration")
-            .unwrap()
-            .trim()
-            .parse::<f64>()
-            .unwrap();
-        let granularity = matches
-            .value_of("granularity")
-            .unwrap()
-            .trim()
-            .parse::<f64>()
-            .unwrap();
-
-        // Run the sim
-        system.print();
-        for _ in 0..duration as u64 {
-            system.update(granularity);
+            // Run the sim
+            system.print();
+            for _ in 0..duration as u64 {
+                system.update(granularity);
+            }
+            system.print();
         }
-        system.print();
-    } else if let Some(matches) = matches.subcommand_matches("download") {
-        download_particles(matches.value_of("output").unwrap()).unwrap_or_else(|err| {
-            eprintln!("Failed to download data: {}", err);
-            process::exit(-1);
-        });
-    } else {
-        // Not a valid mode, print error and usage
-        eprintln!("{}", matches.usage());
-        process::exit(-1);
+        Action::Download { output } => {
+            download_particles(&output).unwrap_or_else(|err| {
+                eprintln!("Failed to download data: {}", err);
+                process::exit(-1);
+            });
+        }
     }
 }
 
-fn parse_file(input: &str, system: &mut System) -> Result<(), Error> {
+fn parse_file<P: AsRef<Path>>(input: &P, system: &mut System) -> Result<(), Error> {
     // Open file
     let f = File::open(input)?;
     let reader = BufReader::new(f);
@@ -129,7 +105,7 @@ fn parse_file(input: &str, system: &mut System) -> Result<(), Error> {
     Ok(())
 }
 
-fn download_particles(output: &str) -> Result<(), Error> {
+fn download_particles<P: AsRef<Path>>(output: &P) -> Result<(), Error> {
     // Open file
     let f = File::create(output)?;
     let writer = Arc::new(Mutex::new(BufWriter::new(f)));
