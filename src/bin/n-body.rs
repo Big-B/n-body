@@ -1,5 +1,4 @@
 use clap::Parser;
-use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
 use std::io::{BufReader, BufWriter};
@@ -27,7 +26,7 @@ struct Args {
 #[derive(clap::Subcommand)]
 enum Action {
     Run {
-        #[clap(short, long = "file", help = "Input file of particles", parse(try_from_os_str = get_path))]
+        #[clap(short, long = "file", help = "Input file of particles")]
         file: PathBuf,
         #[clap(
             short,
@@ -45,15 +44,9 @@ enum Action {
         granularity: f64,
     },
     Download {
-        #[clap(short, long = "output-file", help = "File to put downloaded data", parse(try_from_os_str = get_path))]
+        #[clap(short, long = "output-file", help = "File to put downloaded data")]
         output: PathBuf,
     },
-}
-
-fn get_path(input: &OsStr) -> Result<PathBuf, String> {
-    let mut buf = PathBuf::new();
-    buf.push(input);
-    Ok(buf)
 }
 
 fn main() {
