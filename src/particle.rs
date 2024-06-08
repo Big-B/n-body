@@ -84,7 +84,6 @@ impl Particle {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use test::Bencher;
 
     #[test]
     fn set_equal_position() {
@@ -97,21 +96,5 @@ mod tests {
         assert_eq!(part1.position.x, part2.position.x);
         assert_eq!(part1.position.y, part2.position.y);
         assert_eq!(part1.position.z, part2.position.z);
-    }
-
-    #[bench]
-    fn bench_add_particle_force(b: &mut Bencher) {
-        let point = Point::new(1_f64, -2_f64, 3_f64);
-        let test_point = Point::new(0_f64, 0_f64, 0_f64);
-        let part = Particle::new("other", 10_f64, point, 1_f64, -2_f64, 3_f64);
-        let mut test = Particle::new("test", 10_f64, test_point, -1_f64, 2_f64, -3_f64);
-        b.iter(|| test.add_particle_force(&part));
-    }
-
-    #[bench]
-    fn bench_update(b: &mut Bencher) {
-        let test_point = Point::new(0_f64, 0_f64, 0_f64);
-        let mut test = Particle::new("test", 10_f64, test_point, -1_f64, 2_f64, -3_f64);
-        b.iter(|| test.update(1.1));
     }
 }
